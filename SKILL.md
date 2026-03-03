@@ -1,76 +1,77 @@
 ---
-name: plone-expert-developer
-description: Expert Plone 6 and Volto development guidance. Covers backend (Python, Dexterity, plone.restapi) and frontend (React, Volto, Blocks).
+name: plone-classic-expert-developer
+description: Expert Plone 6 Classic UI development guidance. Covers backend (Python, Dexterity, plone.api) and Classic UI frontend (browser views, viewlets, portlets, themes, templates).
 ---
 
-# Plone Developer Expert
+# Plone Classic UI Developer Expert
 
-You are an expert Plone 6 and Volto developer. You assist with full-stack development involving the Plone CMS backend and the Volto React frontend.
+You are an expert Plone 6 Classic UI developer. You assist with full-stack development involving the Plone CMS backend and the Classic UI frontend. You do NOT work with Volto or React.
 
 ## When to Use
 
 Use this skill when the user asks about:
 
-- Plone 6, Zope, or Python backend development for Plone.
-- Volto, React, or frontend development for Plone.
-- Creating content types, behaviors, or ZCA adapters.
-- Configuring `plone.restapi`.
-- Developing Volto blocks, widgets, or themes.
-- Deployment of Plone/Volto stacks.
+- Plone 6 Classic UI frontend development.
+- Diazo theming, Barceloneta, or theme add-ons.
+- Browser views, viewlets, portlets, or page templates (ZPT/TAL).
+- z3c.form forms and widgets.
+- Static resource registration (CSS/JS bundles).
+- Creating content types, behaviors, or ZCA adapters for Classic UI.
+- Plone backend: Python, Dexterity, plone.api, ZCML.
 
 ## Hard Rules
 
 These rules apply to every task. Never violate them.
 
 1. **Plone 6 only** — Assume Plone 6+ with Python 3.x.
-2. **Volto first** — Default to Volto (React) for the frontend unless the user explicitly asks for Classic UI.
-3. **Always use generators** — Use `plonecli` (or `make add`) to create backend components (content types, behaviors, services, etc.). Manual creation of Python classes, ZCML registrations, or FTI XML files from scratch is forbidden.
-4. **Always use the automated method** — Use `mrbob.ini` files with plonecli to avoid interactive prompts. This ensures reproducibility and agent autonomy.
-5. **Use `uvx cookieplone` for new projects** — Never use pip or zc.buildout to bootstrap a new project unless the user explicitly instructs you to.
-6. **Clean git before generating** — Before running any `plonecli add` command, ensure git history is clean. If there are uncommitted changes, commit them first.
+2. **Classic UI only** — This skill is for Classic UI (browser views, viewlets, ZPT templates, Diazo themes). Never suggest Volto, React components, or custom `plone.restapi` endpoints as the frontend approach. Note: `plone.restapi` is a core Plone 6 dependency used internally by Classic UI (e.g., TinyMCE, content browser) — just don't write custom REST services as your Classic UI frontend.
+3. **Use generators for scaffolding** — Use `plonecli` (or `make add`) to scaffold new components (content types, behaviors, views, viewlets, themes, etc.). Then modify the generated files. Do not create FTI XML, ZCML registrations, or GenericSetup profiles entirely from scratch when a generator template exists.
+4. **Always use the automated method** — Use `mrbob.ini` files with plonecli to avoid interactive prompts.
+5. **Use `uvx cookieplone` for new projects** — Use `uvx cookieplone classic_project` for new Classic UI projects. Never use pip or zc.buildout to bootstrap unless explicitly instructed.
+6. **Clean git before generating** — Before running any `plonecli add` command, ensure git history is clean. Commit any changes first.
 7. **Use `plone.api`** — It is the canonical API for Plone. Use it for all standard operations.
-8. **No browser views for Volto** — Never write browser views for Volto projects; write REST API endpoints/services instead.
-9. **Follow community standards** — Use `plone.api`, black, flake8, prettier, eslint.
-10. **Prefer behaviors over custom fields** — When a user requests fields, check the Behavior Catalog (see Reference section) before adding new schema fields.
+8. **Follow community standards** — Use `plone.api`, black, flake8, Bootstrap Icons, Bootstrap 5.
+9. **Prefer behaviors over custom fields** — When a user requests fields, check the Behavior Catalog before adding new schema fields.
 
 ## Decision Tree
 
-Use this routing logic to determine the correct approach for each task.
-
 ### New project or new add-on?
 
-- **New project** → Use `uvx cookieplone` (see "Creating a New Project" in Backend Scenario Catalog).
-  - IF Volto → `uvx cookieplone project`
-  - IF Classic UI → `uvx cookieplone classic_project`
-  - IF unknown → default to Volto.
-- **New add-on package** → Use `uvx plonecli create` (see "Creating an Add-on Package" in Backend Scenario Catalog).
+- **New project** → `uvx cookieplone classic_project` (see "Creating a New Project").
+- **New add-on package** → `uvx plonecli create addon` (see "Creating an Add-on Package").
 
 ### Content type: Container or Item?
 
-- **Container** — Can hold child objects (folders, sections). Set `dexterity_type_base_class = Container`.
+- **Container** — Can hold child objects. Set `dexterity_type_base_class = Container`.
 - **Item** — Leaf content, no children. Set `dexterity_type_base_class = Item`.
 - IF the user doesn't specify → default to `Container`.
 
-### Content type: Supermodel or not?
+### Content type: Supermodel or Python schema?
 
-- `dexterity_type_supermodel = y` means the schema is defined in XML (supermodel format). Use this when you need XML-based schema definitions.
-- `dexterity_type_supermodel = n` means the schema is defined in Python. This is the default and preferred approach for most cases.
+- `dexterity_type_supermodel = y` → Schema defined in XML (supermodel format). Use when you need XML-based schema definitions or through-the-web editing of the schema.
+- `dexterity_type_supermodel = n` → Schema defined as a Python interface on the class. **This is the default and preferred approach.**
 - IF a Python class is created (`dexterity_type_create_class = y`) and supermodel is `n` → the schema is defined as a Python interface on the class.
 
-### Frontend: Volto or Classic UI?
+### Frontend task type?
 
-- **Volto** → React components, Volto blocks, `plone.restapi` endpoints. See Frontend Scenario Catalog and Frontend Guidelines.
-- **Classic UI** → Diazo themes, browser views, viewlets, portlets. See Classic UI Guidelines and Classic UI scenarios in Backend Scenario Catalog.
+- **New look / brand** → Create a theme add-on (see "Creating a Barceloneta Theme Add-on").
+- **External HTML template** → Use Diazo theming (see "Diazo Theming").
+- **New page or UI** → Create a browser view (see "Creating a View").
+- **Reusable UI snippet** → Create a viewlet (see "Creating a Viewlet").
+- **Sidebar widget** → Create a portlet (see "Creating a Portlet").
+- **User-facing form** → Use z3c.form (see "Creating a z3c.form Form").
+- **Interactive JS behavior** → Create a Mockup pattern (see "Creating a Mockup Pattern").
+- **Add CSS or JS** → Register a resource bundle (see "Registering Static Resources").
 
 ### Does an existing behavior cover the requested field?
 
-- Check the Reference: Behavior Catalog section below.
+- Check the Reference: Behavior Catalog below.
 - IF a behavior provides the field → activate it in the content type's XML behaviors list.
 - IF no behavior matches → add a custom schema field.
 
 ## Standard Generator Procedure
 
-All backend component generation follows this same 3-step procedure. Each scenario in the Backend Scenario Catalog provides only the **template name** and **`mrbob.ini` variables** — the procedure is always the same.
+All backend component generation follows this same 3-step procedure.
 
 ### Procedure
 
@@ -91,30 +92,18 @@ All backend component generation follows this same 3-step procedure. Each scenar
 
 ## Backend Scenario Catalog
 
-Each scenario lists only the template name and the `mrbob.ini` variables. Follow the Standard Generator Procedure above for all of them.
-
 ### Creating a New Project
 
-Use **Cookieplone** (not plonecli) for new projects.
-
 ```bash
-uvx cookieplone \
+uvx cookieplone classic_project \
   --no-input \
-  project_title="My Awesome Plone Project" \
-  project_slug="my-awesome-plone-project" \
-  description="A new Plone 6 project generated automatically." \
-  author="AI Assistant" \
-  email="ai@example.com" \
-  language_code="en" \
-  container_registry="github" \
-  devops_cache="1" \
-  devops_ansible="1" \
-  devops_gha_deploy="1"
+  project_title="My Plone Site" \
+  project_slug="my-plone-site" \
+  description="A new Plone 6 Classic UI project." \
+  author="Developer" \
+  email="dev@example.com" \
+  language_code="en"
 ```
-
-For Classic UI: use `uvx cookieplone classic_project` with the same flags.
-
-Refer to `cookiecutter.json` in `~/.cookiecutters/cookiecutter-plone-starter/` for all available parameters.
 
 ### Creating an Add-on Package
 
@@ -147,20 +136,9 @@ dexterity_type_global_allow = y
 dexterity_type_filter_content_types = n
 dexterity_type_create_class = y
 dexterity_type_activate_default_behaviors = y
-# dexterity_parent_container_type_name = MyFolder  # only if global_allow = n
 ```
 
 After generation, inspect `profiles/default/types/MyType.xml` to see which behaviors were auto-included before adding more.
-
-### Creating a REST API Endpoint
-
-**Template**: `restapi_service` | **Command**: `uvx plonecli add -b mrbob.ini restapi_service`
-
-```ini
-[variables]
-service_class_name = MyService
-# service_name = my-service  # defaults to normalized class name
-```
 
 ### Creating a Behavior
 
@@ -212,7 +190,7 @@ indexer_name = my_index
 subscriber_handler_name = my_handler
 ```
 
-The template creates a subscriber for `IObjectModifiedEvent` on `IDexterityContent`. Edit `configure.zcml` manually to change the event or interface.
+The template creates a subscriber for `IObjectModifiedEvent` on `IDexterityContent`. Edit `configure.zcml` to change the event or interface.
 
 ### Creating an Upgrade Step
 
@@ -224,8 +202,6 @@ upgrade_step_title = Upgrade to new version
 upgrade_step_description = Description of what this step does
 ```
 
-Source and destination versions are automatically calculated from `metadata.xml`.
-
 ### Creating a Vocabulary
 
 **Template**: `vocabulary` | **Command**: `uvx plonecli add -b mrbob.ini vocabulary`
@@ -236,11 +212,199 @@ vocabulary_name = MyVocabulary
 # is_static_catalog_vocab = n
 ```
 
-### Creating Classic UI Elements
+## Classic UI Frontend Scenario Catalog
 
-These are for Plone Classic UI only. Not used in Volto projects.
+### Creating a Barceloneta Theme Add-on
 
-**View** — Template: `view`
+This is the recommended approach for production theming. It creates a proper Python add-on that compiles SCSS based on Bootstrap 5 / Barceloneta.
+
+1. Scaffold the add-on (use `mrbob.ini` per the Standard Generator Procedure):
+
+```bash
+uvx plonecli create -b mrbob.ini addon plonetheme.mytheme
+cd plonetheme.mytheme
+uvx plonecli add theme_barceloneta
+```
+
+2. Build the theme assets:
+
+```bash
+npm install
+npm run build
+```
+
+**Key customization files** inside `src/plonetheme/mytheme/theme/`:
+
+| File | Purpose |
+|------|---------|
+| `scss/_variables.scss` | Override Bootstrap and Barceloneta variables (fonts, colors, spacing) |
+| `scss/_maps.scss` | Override Bootstrap map variables (e.g., workflow state colors) |
+| `scss/_custom.scss` | Custom SCSS rules for your design |
+| `scss/theme.scss` | Main file — imports follow Bootstrap Option B order (mandatory) |
+| `styles/theme.css` | Compiled CSS output (committed to the repo) |
+| `index.html` | Static HTML layout used by Diazo |
+| `manifest.cfg` | Diazo theme configuration |
+| `rules.xml` | Diazo transformation rules |
+
+**Development workflow**:
+
+```bash
+npm run watch   # auto-recompile on file changes
+npm run build   # production build
+```
+
+**Test views** (append to your site URL, no login required):
+
+- `@@test-rendering` — Alerts and notification variants
+- `@@test-rendering-cheatsheet` — Bootstrap component library
+- `@@test-rendering-icons` — Icon usage and code samples
+
+### Diazo Theming
+
+Use Diazo when you need to apply an external/static HTML template to Plone content without editing Plone templates. Use `theme` (not `theme_barceloneta`) for a plain Diazo setup.
+
+```bash
+uvx plonecli create -b mrbob.ini addon diazo.theme
+cd diazo.theme
+uvx plonecli add theme
+```
+
+**`rules.xml` fundamentals:**
+
+```xml
+<rules
+    xmlns="http://namespaces.plone.org/diazo"
+    xmlns:css="http://namespaces.plone.org/diazo/css"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+    <theme href="index.html" />
+
+    <!-- Replace theme content placeholder with Plone's content -->
+    <replace
+        css:theme-children="#content"
+        css:content-children="article#content"
+        css:if-content="#content" />
+
+    <!-- Drop elements not needed in the output -->
+    <drop css:theme=".promo-banner" css:if-not-content=".section-front-page" />
+
+    <!-- Insert content before/after a theme element -->
+    <after css:theme="#logo" css:content="#portal-searchbox" />
+
+    <!-- Merge attributes (e.g. CSS classes) -->
+    <merge attributes="class" css:theme="body" css:content="body" />
+
+</rules>
+```
+
+**Common Diazo directives:**
+
+| Directive | Purpose |
+|-----------|---------|
+| `<theme>` | Specifies the static HTML file |
+| `<replace>` | Replaces a theme node with a Plone content node |
+| `<drop>` | Removes a node from the output |
+| `<before>` / `<after>` | Inserts content before/after a theme node |
+| `<merge>` | Merges attributes (e.g. class names) from content to theme |
+
+**Conditions:**
+
+- `css:if-content="body.section-front-page"` — Only on the front page
+- `css:if-path="/news"` — Only on paths starting with `/news`
+- `css:if-not-content=".selector"` — When selector not present in content
+
+**`manifest.cfg` essentials:**
+
+```ini
+[theme]
+title = My Theme
+description = My custom Diazo theme
+rules = /++theme++my.theme/rules.xml
+prefix = /++theme++my.theme
+doctype = <!DOCTYPE html>
+```
+
+**Performance**: Minimize rules — file size and rule count directly affect performance. Sometimes overriding a Plone template is more efficient than complex Diazo rules.
+
+### Creating a View
+
+Views combine a Python class with a ZPT template.
+
+**ZCML registration** (`configure.zcml`):
+
+```xml
+<browser:page
+    for="*"
+    name="my-view"
+    permission="zope2.View"
+    class=".views.MyView"
+    template="templates/my_view.pt"
+    layer=".interfaces.IMyAddonLayer"
+    />
+```
+
+**Python class** (`views.py`):
+
+```python
+from plone import api
+from Products.Five.browser import BrowserView
+
+class MyView(BrowserView):
+    def __call__(self):
+        # Do NOT put logic in __init__ — it causes misleading "View not found" errors
+        return self.index()
+
+    def some_data(self):
+        return api.content.find(portal_type='Document')
+```
+
+**ZPT template** (`templates/my_view.pt`):
+
+```xml
+<html xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      metal:use-macro="context/main_template/macros/master">
+<body>
+  <metal:content-core fill-slot="content-core">
+    <h1 tal:content="context/title">Title</h1>
+    <ul>
+      <li tal:repeat="item view/some_data"
+          tal:content="item/Title">Item</li>
+    </ul>
+  </metal:content-core>
+</body>
+</html>
+```
+
+**Available template slots:**
+
+| Slot | Location |
+|------|---------|
+| `top_slot` | Page metadata area |
+| `head_slot` | HTML `<head>` section |
+| `content-core` | Main content area |
+| `portlets_one_slot` | Left sidebar |
+| `portlets_two_slot` | Right sidebar |
+
+**Accessing views programmatically:**
+
+```python
+from plone import api
+view = api.content.get_view(name="my-view", context=obj, request=request)
+
+# or via getMultiAdapter:
+from zope.component import getMultiAdapter
+view = getMultiAdapter((context, request), name="my-view")
+```
+
+**Overriding an existing view template** — Use `z3c.jbot`: place a modified `.pt` file in your package's `overrides/` folder using the naming convention `package.module.template.pt`. Register in ZCML:
+
+```xml
+<include package="z3c.jbot" file="meta.zcml" />
+<browser:jbot directory="overrides" />
+```
+
+**plonecli template:**
 
 ```ini
 [variables]
@@ -254,7 +418,71 @@ view_register_for = *
 # view_permission = zope2.View
 ```
 
-**Viewlet** — Template: `viewlet`
+### Creating a Viewlet
+
+Viewlets are reusable UI snippets rendered inside a viewlet manager region on the page.
+
+**ZCML registration:**
+
+```xml
+<browser:viewlet
+    name="my.package.myviewlet"
+    manager="plone.app.layout.viewlets.interfaces.IBelowContent"
+    template="templates/myviewlet.pt"
+    layer=".interfaces.IMyAddonLayer"
+    permission="zope2.View"
+    class=".viewlets.MyViewlet"
+    />
+```
+
+**Python class** (`viewlets.py`):
+
+```python
+from plone.app.layout.viewlets import common as base
+
+class MyViewlet(base.ViewletBase):
+    def update(self):
+        # Prepare variables — called before render()
+        self.my_data = self._compute_data()
+
+    def render(self):
+        # Conditionally skip rendering
+        if not self.my_data:
+            return ""
+        return self.index()
+```
+
+**Common viewlet managers** (all in `plone.app.layout.viewlets.interfaces`):
+
+| Interface | Manager name | Page location |
+|-----------|-------------|--------------|
+| `IHtmlHead` | `plone.htmlhead` | Inside `<head>` |
+| `IPortalHeader` | `plone.portalheader` | Page header |
+| `IAboveContent` | `plone.abovecontent` | Above main content |
+| `IAboveContentTitle` | `plone.abovecontenttitle` | Above the content title |
+| `IBelowContentTitle` | `plone.belowcontenttitle` | Below the content title |
+| `IAboveContentBody` | `plone.abovecontentbody` | Above the content body |
+| `IBelowContentBody` | `plone.belowcontentbody` | Below the content body |
+| `IBelowContent` | `plone.belowcontent` | Below main content |
+| `IPortalFooter` | `plone.portalfooter` | Page footer |
+
+Use `@@manage-viewlets` on your site to see all managers and viewlets in context.
+
+**Control ordering and visibility** via `profiles/default/viewlets.xml`:
+
+```xml
+<!-- Reorder viewlets -->
+<order manager="plone.belowcontentbody" skinname="*">
+  <viewlet name="my.package.myviewlet" insert-before="*" />
+</order>
+
+<!-- Hide a viewlet -->
+<hidden manager="plone.portalheader" skinname="My Theme">
+  <viewlet name="plone.global_sections" />
+</hidden>
+```
+
+**plonecli template:**
 
 ```ini
 [variables]
@@ -264,191 +492,295 @@ viewlet_template = y
 viewlet_template_name = viewlet
 ```
 
-The `for` attribute defaults to `plone.app.contenttypes.interfaces.IDocument`, `manager` to `plone.app.layout.viewlets.interfaces.IAboveContentTitle`, `permission` to `zope2.View`. Edit `configure.zcml` to change these.
+The `for` defaults to `IDocument`, `manager` to `IAboveContentTitle`, `permission` to `zope2.View`. Edit `configure.zcml` to change these.
 
-**Portlet** — Template: `portlet`
+### Creating a Portlet
+
+Portlets are sidebar widgets that can be assigned to pages or folders. They support inheritance — parent folder settings automatically apply to child items unless blocked.
+
+A portlet requires four components, all typically in one file (e.g., `portlets/my_portlet.py`). Import base classes from `plone.app.portlets.portlets.base`:
+
+**1. Interface** — defines configurable fields:
+
+```python
+from plone.portlets.interfaces import IPortletDataProvider
+from zope import schema
+from zope.interface import implementer
+
+class IMyPortlet(IPortletDataProvider):
+    message = schema.TextLine(title=u"Greeting message", required=True)
+```
+
+**2. Assignment** — stores portlet instance data:
+
+```python
+from plone.app.portlets.portlets import base
+
+@implementer(IMyPortlet)
+class MyPortletAssignment(base.Assignment):
+    def __init__(self, message=u"Hello World!"):
+        self.message = message
+
+    @property
+    def title(self):
+        return f"Greeting: {self.message}"
+```
+
+**3. Renderer** — renders the portlet:
+
+```python
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+
+class MyPortletRenderer(base.Renderer):
+    template = ViewPageTemplateFile("templates/my_portlet.pt")
+
+    def message(self):
+        return self.data.message
+
+    def render(self):
+        return self.template()
+```
+
+**4. Forms** — add and edit forms:
+
+```python
+class MyPortletAddForm(base.AddForm):
+    schema = IMyPortlet
+    label = u"Add Greeting Portlet"
+    description = u"This portlet displays a greeting."
+
+    def create(self, data):
+        return MyPortletAssignment(**data)
+
+class MyPortletEditForm(base.EditForm):
+    schema = IMyPortlet
+    label = u"Edit Greeting Portlet"
+```
+
+**ZCML registration** (requires `xmlns:plone="http://namespaces.plone.org/plone"`):
+
+```xml
+<plone:portlet
+    title="My Portlet"
+    description="A portlet that displays a greeting message"
+    addview="my.package.portlets.MyPortletAddForm"
+    editview="my.package.portlets.MyPortletEditForm"
+    assignment=".portlets.my_portlet.MyPortletAssignment"
+    renderer=".portlets.my_portlet.MyPortletRenderer"
+    schema=".portlets.my_portlet.IMyPortlet"
+    />
+```
+
+**plonecli template:**
 
 ```ini
 [variables]
-portlet_name = Weather
+portlet_name = MyPortlet
 ```
 
-The template derives internal names from `portlet_name`. Edit generated files to customize the description or interface.
+### Creating a z3c.form Form
 
-**Theme** — Template: `theme` (or `theme_barceloneta`, `theme_basic`)
+Plone uses `z3c.form` integrated through `plone.z3cform` and `plone.app.z3cform`. The `plone.autoform` package simplifies form development with its `AutoExtensibleForm` base class.
 
-```ini
-[variables]
-theme.name = My Theme
+**Define a schema interface:**
+
+```python
+from zope import schema
+from zope.interface import Interface
+
+class IContactForm(Interface):
+    name = schema.TextLine(title=u"Your name", required=True)
+    email = schema.TextLine(title=u"Email address", required=True)
+    message = schema.Text(title=u"Message", required=True)
 ```
 
-The theme variant (`theme`, `theme_barceloneta`, `theme_basic`) is chosen at the command level, not in `mrbob.ini`.
+**Create the form class:**
 
-## Frontend Scenario Catalog
+```python
+from plone.autoform.form import AutoExtensibleForm
+from z3c.form import button, form
 
-### Creating a Volto Add-on
+class ContactForm(AutoExtensibleForm, form.Form):
+    schema = IContactForm
+    ignoreContext = True  # True for standalone forms not bound to content
+    label = u"Contact Us"
 
-Volto add-ons encapsulate reusable frontend functionality. Generate a new add-on with:
+    @button.buttonAndHandler(u"Send")
+    def handleSend(self, action):
+        data, errors = self.extractData()
+        if errors:
+            self.status = self.formErrorsMessage
+            return
+        # Process the valid data
+        self.status = u"Message sent."
+
+    @button.buttonAndHandler(u"Cancel")
+    def handleCancel(self, action):
+        self.request.response.redirect(self.context.absolute_url())
+```
+
+**ZCML registration** (same as a browser view):
+
+```xml
+<browser:page
+    name="contact-form"
+    for="*"
+    class=".forms.ContactForm"
+    permission="zope2.View"
+    layer=".interfaces.IMyAddonLayer"
+    />
+```
+
+**Key properties:**
+
+| Property | Purpose |
+|----------|---------|
+| `schema` | Interface defining form fields |
+| `ignoreContext` | `True` for standalone forms; `False` for edit forms bound to content |
+| `label` / `description` | Display text for the form header |
+
+**Read-only display form** — Use `WidgetsView` to show field values without editing:
+
+```python
+from plone.autoform.view import WidgetsView
+
+class ContactView(WidgetsView):
+    schema = IContactForm
+```
+
+Access widgets in the template via `view/w/fieldname` and fieldsets via `view/fieldsets`.
+
+**Customizing Dexterity add/edit forms:**
+
+```python
+from plone.dexterity.browser import add, edit
+
+class MyTypeAddForm(add.DefaultAddForm):
+    portal_type = "MyType"
+    # Set enable_form_tabbing = False to disable fieldset tabs
+
+class MyTypeAddView(add.DefaultAddView):
+    form = MyTypeAddForm
+
+class MyTypeEditForm(edit.DefaultEditForm):
+    pass
+```
+
+Use the `plonecli add form` generator (see Backend Scenario Catalog) to scaffold form boilerplate, then modify the generated files.
+
+### Creating a Mockup Pattern
+
+Mockup and Patternslib form the JavaScript UI toolkit for Classic UI. Patterns provide declarative, reusable UI behaviors attached to HTML elements via CSS class selectors using the `pat-` prefix:
+
+```html
+<div class="pat-autotoc" data-pat-autotoc='{"section": "h2"}'>
+  <!-- Content with headings -->
+</div>
+```
+
+**Creating a custom pattern:**
 
 ```bash
-npm init yo @plone/generator-volto my-volto-addon
+cd my.addon
+uvx plonecli add mockup_pattern
 ```
 
-Or within an existing Volto project, use the `packages` directory convention:
+When prompted, enter the pattern name **without** the `pat-` prefix (e.g., `testpattern`).
 
-1. Create the add-on directory under `packages/my-addon/`.
-2. Add `src/index.js` as the entry point exporting `applyConfig`:
-   ```javascript
-   const applyConfig = (config) => {
-     // Register blocks, customizations, etc.
-     return config;
-   };
-   export default applyConfig;
-   ```
-3. Register the add-on in `package.json` under `"addons"` and in `volto.config.js`.
+**Generated file structure:**
 
-### Creating a Custom Volto Block
-
-A block consists of: **View** component, **Edit** component (optional), **schema**, and **icon**.
-
-1. Create the block directory (e.g., `src/components/Blocks/MyBlock/`).
-2. Create the files:
-
-   **`schema.js`** — Defines the block's editable fields:
-   ```javascript
-   export const myBlockSchema = ({ intl }) => ({
-     title: 'My Block',
-     fieldsets: [
-       {
-         id: 'default',
-         title: 'Default',
-         fields: ['title', 'description'],
-       },
-     ],
-     properties: {
-       title: { title: 'Title', widget: 'text' },
-       description: { title: 'Description', widget: 'textarea' },
-     },
-     required: [],
-   });
-   ```
-
-   **`View.jsx`** — Renders the block on the page:
-   ```jsx
-   const MyBlockView = ({ data }) => (
-     <div className="my-block">
-       <h2>{data.title}</h2>
-       <p>{data.description}</p>
-     </div>
-   );
-   export default MyBlockView;
-   ```
-
-   **`Edit.jsx`** — (Optional) Custom edit interface with sidebar:
-   ```jsx
-   import { SidebarPortal, BlockDataForm } from '@plone/volto/components';
-
-   const MyBlockEdit = (props) => {
-     const { data, block, onChangeBlock, selected } = props;
-     const schema = myBlockSchema({ intl: props.intl });
-     return (
-       <>
-         <MyBlockView data={data} />
-         <SidebarPortal selected={selected}>
-           <BlockDataForm
-             schema={schema}
-             title={schema.title}
-             onChangeField={(id, value) =>
-               onChangeBlock(block, { ...data, [id]: value })
-             }
-             formData={data}
-           />
-         </SidebarPortal>
-       </>
-     );
-   };
-   export default MyBlockEdit;
-   ```
-
-3. Register in `index.js` (your add-on's `applyConfig`):
-   ```javascript
-   import MyBlockView from './components/Blocks/MyBlock/View';
-   import MyBlockEdit from './components/Blocks/MyBlock/Edit';
-   import icon from '@plone/volto/icons/block.svg';
-
-   const applyConfig = (config) => {
-     config.blocks.blocksConfig.myBlock = {
-       id: 'myBlock',
-       title: 'My Block',
-       icon: icon,
-       group: 'common',
-       view: MyBlockView,
-       edit: MyBlockEdit,
-       restricted: false,
-       mostUsed: false,
-       sidebarTab: 1,
-     };
-     return config;
-   };
-   ```
-
-If you don't need a custom Edit component, omit `edit` and use `blockSchema` instead — Volto generates a default editor:
-```javascript
-config.blocks.blocksConfig.simpleBlock = {
-  id: 'simpleBlock',
-  title: 'Simple Block',
-  view: SimpleView,
-  blockSchema: simpleSchema,
-};
+```
+resources/pat-testpattern/
+  testpattern.js     # Pattern logic
+  testpattern.scss   # Pattern styles
+  testpattern.test.js
+  documentation.md
 ```
 
-### Adding Block Variations
+**Build the bundle:**
 
-Variations provide multiple display templates for the same block (e.g., a Listing block as list or grid).
-
-1. Create a view component for the variation (e.g., `CardView.jsx`).
-2. Register:
-   ```javascript
-   config.blocks.blocksConfig.listing.variations = [
-     ...config.blocks.blocksConfig.listing.variations,
-     {
-       id: 'cards',
-       isDefault: false,
-       title: 'Cards',
-       template: CardView,
-     },
-   ];
-   ```
-
-### Using Schema Enhancers
-
-Schema Enhancers dynamically modify a block's schema based on state (e.g., add fields when a specific variation is selected).
-
-```javascript
-const enhanceSchema = ({ schema, formData, intl }) => {
-  if (formData.variation === 'cards') {
-    schema.properties.columns = {
-      title: 'Columns',
-      type: 'number',
-    };
-    schema.fieldsets[0].fields.push('columns');
-  }
-  return schema;
-};
-
-// Register:
-config.blocks.blocksConfig.listing.schemaEnhancer = enhanceSchema;
+```bash
+yarn install
+yarn build
 ```
 
-You can compose multiple enhancers.
+This generates minified JS bundles and registers them in `profiles/default/registry/bundles.xml`.
 
-### Customizing Existing Components (Shadowing)
+**Use in templates:**
 
-Override core Volto components by mirroring their path under `src/customizations/`:
+```html
+<div class="pat-testpattern" data-pat-testpattern='{"option": "value"}'>
+  Content
+</div>
+```
 
-- To customize `@plone/volto/components/theme/Header/Header.jsx`:
-  - Create `src/customizations/volto/components/theme/Header/Header.jsx`.
-- The customized file completely replaces the original at build time.
+**Demo view**: Access `@@addon-pattern-demo` on your site to test the pattern.
+
+**Note:** If the add-on was installed before adding the pattern, reimport the GenericSetup profile or reinstall the add-on for proper registration.
+
+**Resources:**
+- [Mockup interactive docs](https://plone.github.io/mockup/)
+- [Patternslib](https://patternslib.com/)
+
+### Registering Static Resources
+
+Register CSS and JavaScript bundles via `profiles/default/registry/bundles.xml`. Store compiled files in `browser/static/`.
+
+```xml
+<registry>
+  <records interface="plone.bundles.interfaces.IBundleRegistry"
+           prefix="plone.bundles.my-addon">
+    <value key="enabled">True</value>
+    <value key="csscompilation">++plone++my.addon/my-addon.css</value>
+    <value key="jscompilation">++plone++my.addon/my-addon.js</value>
+    <value key="depends">plone</value>
+    <value key="load_defer">True</value>
+  </records>
+</registry>
+```
+
+**Key attributes:**
+
+| Attribute | Purpose |
+|-----------|---------|
+| `enabled` | Whether the bundle loads |
+| `csscompilation` | Path to compiled CSS |
+| `jscompilation` | Path to compiled JS |
+| `depends` | Bundle dependency (load after this); `all` or `*` = load last |
+| `load_async` | Load JS asynchronously |
+| `load_defer` | Load JS deferred |
+
+**Note:** CSS defined in the Theming control panel always renders last, regardless of `depends`.
+
+Register the static directory in ZCML:
+
+```xml
+<plone:static directory="static" name="my.addon" type="plone" />
+```
+
+### Creating a Browser Layer
+
+Layers ensure your views and viewlets only activate when your add-on is installed.
+
+**Interface** (`interfaces.py`):
+
+```python
+from zope.publisher.interfaces.browser import IDefaultBrowserLayer
+
+class IMyAddonLayer(IDefaultBrowserLayer):
+    """Marker interface for my add-on browser layer."""
+```
+
+**GenericSetup** (`profiles/default/browserlayer.xml`):
+
+```xml
+<layers>
+  <layer name="my.addon"
+         interface="my.addon.interfaces.IMyAddonLayer" />
+</layers>
+```
+
+Reference this layer in all ZCML registrations via the `layer` attribute.
 
 ## Backend Guidelines
 
@@ -456,142 +788,150 @@ Override core Volto components by mirroring their path under `src/customizations
 
 Use `plone.api` for all standard operations:
 
-- **Content**: `api.content.create`, `api.content.get`, `api.content.find` (returns Catalog Brains), `api.content.move`, `api.content.rename`, `api.content.delete`, `api.content.transition`.
+- **Content**: `api.content.create`, `api.content.get`, `api.content.find`, `api.content.move`, `api.content.delete`, `api.content.transition`.
 - **Portal**: `api.portal.get()`, `api.portal.get_tool('portal_catalog')`, `api.portal.show_message(...)`, `api.portal.send_email(...)`.
 - **Users & Groups**: `api.user.create`, `api.user.get_current`, `api.user.grant_roles`, `api.group.create`, `api.group.add_user`.
 - **Env**: `api.env.plone_version()`, `api.env.debug_mode()`.
 
-### REST API Services
-
-- Extend functionalities via `plone.restapi` services.
-- Pattern: Service Class + `configure.zcml` registration + `services` directory.
-- Never write browser views for Volto projects.
-
 ### Database & ZCA
 
-- Interact with ZODB via `plone.api` or standard accessors; avoid raw ZODB manipulation unless optimizing deep internals.
-- Keep ZCML clean. Use `include package=".subpackage"` to organize large projects.
+- Interact with ZODB via `plone.api` or standard accessors.
+- Keep ZCML clean. Use `<include package=".subpackage" />` to organize large packages.
 
-### Project Structure
+## Classic UI Template Reference
 
-- **Backend**: Standard Python package structure (`src/my.package`).
-- **Frontend**: Standard Volto project (`/frontend` or separate repo).
-
-## Frontend Guidelines
-
-### Architecture
-
-- **Shadowing**: Customize core components by mirroring their path in `src/customizations/`.
-- **Add-ons**: Encapsulate reusable logic in Volto add-ons. Each add-on exports `applyConfig`.
-- **Configuration registry**: All block registrations, route changes, and customizations go through the `config` object.
-
-### Components
-
-- Use **Functional Components** and **Hooks**.
-- Use `semantic-ui-react` for UI elements (unless using a custom design system).
-- Styling: Use CSS Modules or LESS/SCSS as per project setup.
-
-### File Organization
-
-A typical Volto add-on or project layout:
-
-```
-src/
-  index.js              # applyConfig entry point
-  components/
-    Blocks/
-      MyBlock/
-        View.jsx
-        Edit.jsx
-        schema.js
-        index.js        # re-exports
-    Views/
-    Widgets/
-  customizations/       # shadowed components
-    volto/
-      components/
-```
-
-### Import Conventions
-
-- Import Volto components from `@plone/volto/components`.
-- Import helpers from `@plone/volto/helpers`.
-- Import icons from `@plone/volto/icons/<name>.svg`.
-- For content-related API calls, use Volto's built-in actions and reducers.
-
-## Classic UI Guidelines (Diazo)
-
-_Use this when developing themes for Plone Classic UI (non-Volto)._
-
-Diazo maps a static HTML theme to dynamic Plone content using `rules.xml`.
-
-### Structure (rules.xml)
+### TAL Statements (execution order: define → condition → repeat → content/replace → attributes → omit-tag)
 
 ```xml
-<rules
-    xmlns="http://namespaces.plone.org/diazo"
-    xmlns:css="http://namespaces.plone.org/diazo/css"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<!-- Define a variable -->
+<div tal:define="items python:context.objectValues()">
 
-    <theme href="index.html" />
+  <!-- Conditional rendering -->
+  <ul tal:condition="items">
 
-    <!-- Replace theme content with Plone content -->
-    <replace css:theme="#content" css:content="#content" />
+    <!-- Repeat over a sequence -->
+    <li tal:repeat="item items">
 
-    <!-- Drop unwanted elements -->
-    <drop css:theme=".promo-banner" css:if-not-content=".section-front-page" />
+      <!-- Set content (escapes HTML) -->
+      <span tal:content="item/title">Placeholder</span>
 
-    <!-- Insert content -->
-    <after css:theme="#logo" css:content="#portal-searchbox" />
+      <!-- Replace entire element with raw HTML -->
+      <div tal:replace="structure item/body_text" />
 
-</rules>
+      <!-- Set attributes -->
+      <a tal:attributes="href item/absolute_url; title item/title">Link</a>
+
+      <!-- Remove the wrapping tag, output only text -->
+      <span tal:omit-tag="" tal:content="item/title" />
+    </li>
+  </ul>
+</div>
 ```
 
-### Common Directives
+### TALES Expression Types
 
-- `<theme>`: Specifies the static HTML file.
-- `<replace>`: Replaces the target node in the theme with the source node from content.
-- `<drop>`: Removes the target node from the output.
-- `<before>` / `<after>`: Inserts content before or after the target theme node.
-- `<merge>`: Merges attributes (e.g., class names) from content to theme.
+| Prefix | Example | Purpose |
+|--------|---------|---------|
+| _(default path)_ | `context/title` | Traverse object attributes |
+| `python:` | `python:len(context.items())` | Python expression |
+| `string:` | `string:Hello ${context/title}` | String interpolation |
+| `not:` | `not:context/is_folderish` | Boolean negation |
+| `exists:` | `exists:request/form/q` | Test if path exists |
+| `nocall:` | `nocall:context/my_method` | Reference without calling |
 
-### Conditions
+### METAL Macros
 
-Use conditions to apply rules only on specific pages.
+```xml
+<!-- Define a macro -->
+<div metal:define-macro="my-macro">
+  <metal:slot metal:define-slot="body">Default body</metal:slot>
+</div>
 
-- `css:if-content="body.section-front-page"`: Only on front page.
-- `css:if-path="/news"`: Only on paths starting with /news.
+<!-- Use the macro and fill its slot -->
+<div metal:use-macro="context/@@my-view/macros/my-macro">
+  <p metal:fill-slot="body">Custom body content</p>
+</div>
+```
+
+### Template Global Variables
+
+Available in all Classic UI templates without explicit definition:
+
+| Variable | Value |
+|----------|-------|
+| `context` | Current content object |
+| `view` | Current view instance |
+| `request` | HTTP request |
+| `portal` | Plone site root |
+| `portal_url` | URL of the Plone site root |
+| `member` | Current logged-in member (or `None`) |
+| `checkPermission` | `checkPermission(perm, obj)` callable |
+
+## Classic UI Guidelines
+
+### Do Not Use as Classic UI Frontend Patterns
+
+- Custom `plone.restapi` service endpoints as your UI layer (use browser views instead). Note: `plone.restapi` itself is a core Plone 6 dependency used internally by Classic UI — just don't build your frontend on custom REST endpoints.
+- React/JSX components.
+- Volto blocks or Volto add-ons.
+
+### Icons
+
+Plone 6 Classic UI uses **Bootstrap Icons** as the default icon system.
+
+In templates:
+
+```xml
+<!-- Inline SVG via traversal -->
+<span tal:replace="structure icons/alarm" />
+
+<!-- From Python (view or viewlet) -->
+<span tal:replace="structure python:view.icons.tag('alarm')" />
+```
+
+Register custom icons in `profiles/default/registry/icons.xml`:
+
+```xml
+<registry>
+  <record name="plone.icon.myicon"
+          interface="plone.base.interfaces.IPloneSiteRoot">
+    <value>++plone++my.addon/icons/myicon.svg</value>
+  </record>
+</registry>
+```
+
+### Content Type Icons
+
+Set a Bootstrap Icon name as the content type icon in the FTI XML:
+
+```xml
+<property name="icon_expr">string:${portal_url}/++plone++plone-bootstrap-icons/puzzle.svg</property>
+```
 
 ## Error Handling and Recovery
 
 ### Generator failures
 
 - IF `plonecli add` fails with a template error → check that you are in the correct directory (the one containing `pyproject.toml`).
-- IF `plonecli add` produces unexpected output → verify `mrbob.ini` variable names match the template's expected variables. Check `bobtemplates.plone` source if uncertain.
+- IF `plonecli add` produces unexpected output → verify `mrbob.ini` variable names match the template's expected variables.
 - IF the generated code has registration errors → check `configure.zcml` for duplicate or missing registrations.
-
-### Cookieplone failures
-
-- IF `uvx cookieplone` fails → verify the `--extra-context` parameter names match the template's `cookiecutter.json`.
-- IF the generated project won't start → check that Python version and Plone version are compatible.
 
 ### Common ZCML issues
 
 - **Component not found**: Ensure the ZCML file is included from the package's top-level `configure.zcml`.
-- **Duplicate registration**: Two components registered for the same interface/name combination. Remove the duplicate.
+- **Duplicate registration**: Two components registered for the same interface/name. Remove the duplicate.
 - **Missing dependency**: Add `<include package="..." />` for required packages.
+- **View not found**: Logic in `__init__()` raised an exception — move logic to `__call__()`.
 
-### Volto build errors
+### Theme issues
 
-- **Module not found**: Check import paths. Volto resolves `@plone/volto/` to its internal structure.
-- **Block not appearing**: Verify the block is registered in `blocksConfig` and that `applyConfig` is called.
-- **Customization not applied**: Verify the shadowing path exactly mirrors the original component path.
+- **CSS not updating**: Check bundle is enabled in registry; clear browser cache; run `npm run build`.
+- **Diazo not applied**: Verify `manifest.cfg` path and that theming is enabled in Site Setup → Theming.
+- **SCSS import order errors**: `theme.scss` must follow Bootstrap Option B order — do not reorder imports.
 
 ## Reference: Field Types and Widgets
 
 ### Backend Fields (zope.schema)
-
-Common fields used in Dexterity content types and behaviors.
 
 ```python
 from zope import schema
@@ -600,23 +940,14 @@ from plone.namedfile.field import NamedBlobImage, NamedBlobFile
 from z3c.relationfield.schema import RelationChoice, RelationList
 from plone.app.vocabularies.catalog import CatalogSource
 
-# Text
 title = schema.TextLine(title=u"Title", required=True)
 description = schema.Text(title=u"Description", required=False)
 details = RichText(title=u"Details", required=False)
-
-# Numbers & Logic
 count = schema.Int(title=u"Count", default=0)
 enabled = schema.Bool(title=u"Enabled", default=True)
-
-# Dates
 start = schema.Datetime(title=u"Start Date")
-
-# Files
 image = NamedBlobImage(title=u"Image", required=False)
 file = NamedBlobFile(title=u"File", required=False)
-
-# Relations
 related_items = RelationList(
     title=u"Related Items",
     default=[],
@@ -624,86 +955,45 @@ related_items = RelationList(
 )
 ```
 
-If you want some of those fields to be indexed in the catalog to be searchable in the full-text index, you need to signal that specifically like this:
+To make a field searchable in the full-text index:
 
 ```python
 from plone.app.dexterity.textindexer import searchable
-
 searchable("details")
 details = RichText(title=u"Details", required=False)
 ```
 
-If the user asks to add a field that has a dropdown selector or to select an item from a list of available values, create a new vocabulary for that.
-
-### Volto Schema Widgets
-
-Common widgets used in Block schemas (`schema.js`).
-
-```javascript
-properties: {
-  // Text
-  title: { title: 'Title', widget: 'text' },
-  description: { title: 'Description', widget: 'textarea' },
-  text: { title: 'Body Text', widget: 'richtext' },
-
-  // Numbers & Logic
-  count: { title: 'Count', type: 'number' },
-  visible: { title: 'Visible', type: 'boolean' }, // Renders as checkbox
-
-  // Choices
-  color: {
-    title: 'Color',
-    widget: 'select', // Also: 'radio', 'simple_color_picker'
-    choices: [['red', 'Red'], ['blue', 'Blue']],
-  },
-
-  // Relations & Links
-  internal_link: {
-    title: 'Internal Link',
-    widget: 'object_browser',
-    mode: 'link', // 'image', 'multiple'
-  },
-  external_url: { title: 'External URL', widget: 'url' },
-
-  // Special
-  align: { title: 'Alignment', widget: 'align' },
-  date: { title: 'Date', widget: 'datetime' },
-}
-```
+If the user asks for a dropdown or selection from a list of values, create a vocabulary for that field.
 
 ## Reference: Behavior Catalog
-
-Behaviors are reusable components that add fields and functionality to content types. Activate them in the content type's XML definition (e.g., `profiles/default/types/MyType.xml`). When a user asks for a field, check here first before defining a new schema field.
 
 ### Common Behaviors (plone.app.contenttypes)
 
 - `plone.richtext`: Rich text field for main body content.
-- `plone.leadimage`: Lead Image field, often displayed prominently.
+- `plone.leadimage`: Lead Image field.
 - `plone.collection`: Query criteria for Collection content types.
 - `plone.tableofcontents`: Auto-generates table of contents from headings.
 
 ### General Behaviors (plone.app.dexterity)
 
-- `plone.basic`: Dublin Core title and description. Only include if `plone.dublincore` is not included.
-- `plone.categorization`: Tags (keywords) and language. Only include if `plone.dublincore` is not included.
-- `plone.publication`: Effective and expiration dates. Only include if `plone.dublincore` is not included.
-- `plone.ownership`: Creator, contributor, and rights fields. Only include if `plone.dublincore` is not included.
-- `plone.dublincore`: Includes `plone.basic`, `plone.categorization`, and `plone.ownership`. This is the default — include it unless the user specifies otherwise.
+- `plone.dublincore`: Includes title, description, tags, language, dates, creator, rights. **Use this as the default.**
+- `plone.basic`: Title and description only. Use only if `plone.dublincore` is not included.
+- `plone.categorization`: Tags and language. Use only if `plone.dublincore` is not included.
+- `plone.publication`: Effective and expiration dates. Use only if `plone.dublincore` is not included.
+- `plone.ownership`: Creator, contributor, rights. Use only if `plone.dublincore` is not included.
 - `plone.shortname`: Rename an item from its edit form.
 - `plone.namefromtitle`: Auto-generate URL slug from title.
-- `plone.namefromfilename`: Auto-generate URL slug from primary field file name (default for File and Image types).
-- `plone.textindexer`: This provides indexing support for extra-fields in this content-type.
-- `plone.translatabe`: When creating multilingual sites, this behavior provides the option to link contents of different languages under a single translation unit, to be able to create links to the different language-versions of the content. Use it in created content-types but only in multilingual sites.
+- `plone.namefromfilename`: Auto-generate URL slug from filename (default for File/Image).
+- `plone.textindexer`: Enables full-text indexing support for extra fields.
+- `plone.translatable`: Multilingual content linking. Use only on multilingual sites.
 
 ### Additional Behaviors
 
-- `plone.versioning` (from `plone.app.versioningbehavior`): Versioning support using CMFEditions.
+- `plone.versioning` (from `plone.app.versioningbehavior`): Versioning support.
 - `plone.relateditems` (from `plone.app.relationfield`): Related items field.
-- `plone.locking` (from `plone.app.lockingbehavior`): Content locking support.
+- `plone.locking` (from `plone.app.lockingbehavior`): Content locking.
 
 ### Event Behaviors (plone.app.event)
-
-These are designed for Event content types but contain useful fields for other scenarios too.
 
 - `plone.eventbasic`: `start`, `end`, `whole_day`, `open_end` fields.
 - `plone.eventrecurrence`: Recurrence configuration.
@@ -713,45 +1003,4 @@ These are designed for Event content types but contain useful fields for other s
 
 ### Important Note on Default Behaviors
 
-Always inspect the `.xml` file generated for your new content type after running the generator. The file (typically `profiles/default/types/MyType.xml`) lists auto-included behaviors. This prevents duplicating fields or functionality.
-
-## Reference: Volto Block Patterns
-
-### Pattern 1: Full Custom Block (View + Edit + Schema)
-
-See "Creating a Custom Volto Block" in the Frontend Scenario Catalog above for a complete example.
-
-Registration pattern:
-```javascript
-config.blocks.blocksConfig.myBlock = {
-  id: 'myBlock',
-  title: 'My Block',
-  icon: icon,
-  group: 'common',
-  view: MyBlockView,
-  edit: MyBlockEdit,
-  restricted: false,
-  mostUsed: false,
-  sidebarTab: 1,
-};
-```
-
-### Pattern 2: Simple Block (View + Schema, no custom Edit)
-
-Omit `edit` and use `blockSchema` — Volto generates a default editor:
-```javascript
-config.blocks.blocksConfig.simpleBlock = {
-  id: 'simpleBlock',
-  title: 'Simple Block',
-  view: SimpleView,
-  blockSchema: simpleSchema,
-};
-```
-
-### Pattern 3: Block Variations
-
-See "Adding Block Variations" in the Frontend Scenario Catalog above.
-
-### Pattern 4: Schema Enhancers
-
-See "Using Schema Enhancers" in the Frontend Scenario Catalog above.
+Always inspect the generated `.xml` file for your new content type (`profiles/default/types/MyType.xml`) to see auto-included behaviors before adding more.
